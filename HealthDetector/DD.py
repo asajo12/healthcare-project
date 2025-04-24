@@ -126,3 +126,107 @@ print("Combined feature shape:", X_combined.shape)
 print("Target shape:", y.shape)
 
 
+
+
+""" 
+TRAIN-TEST SPLIT
+This code splits the combined feature matrix and target variable into training and test sets.
+"""
+from sklearn.model_selection import train_test_split
+
+#split the data into training and test sets
+#80% train, 20% test
+X_train, X_test, y_train, y_test = train_test_split(
+    X_combined, y, test_size=0.2, random_state=42, stratify=y
+)
+
+#TESTING: show the shape of the training and test sets
+print("✅ Data split into training and test sets. Sample sizes:")
+print("Train size:", X_train.shape)
+print("Test size:", X_test.shape)
+
+""" 
+BUILDING NN MODEL
+This code builds a simple feedforward neural network using Keras.
+
+"""
+import tensorflow as tf
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense, Dropout
+
+#define the model architecture
+model = Sequential([
+    Dense(128, activation='relu', input_shape=(X_combined.shape[1],)),
+    Dropout(0.3),
+    Dense(64, activation='relu'),
+    Dropout(0.2),
+    Dense(1, activation='sigmoid')  #binary classification
+])
+
+#compile the model
+model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+#TESTING: show the model summary
+print("✅ Model summary:")
+model.summary()
+
+#training the model
+history = model.fit(
+    X_train, y_train,
+    validation_data=(X_test, y_test),
+    epochs=20,
+    batch_size=16,
+    verbose=1
+)
+
+loss, accuracy = model.evaluate(X_test, y_test)
+print(f"\n✅ Test Accuracy (NN): {accuracy:.4f}")
+
+""" 
+VISUALIZING TRAINING HISTORY
+"""
+import matplotlib.pyplot as plt
+
+plt.plot(history.history['accuracy'], label='Train Accuracy')
+plt.plot(history.history['val_accuracy'], label='Validation Accuracy')
+plt.title('Training Progress')
+plt.xlabel('Epoch')
+plt.ylabel('Accuracy')
+plt.legend()
+plt.grid(True)
+plt.show()
+
+"""
+BASE COMPARISON: LOGISTIC REGRESSION
+This code builds a logistic regression model as a baseline for comparison with the neural network model.
+"""
+
+# Reuse the structured features before combining with embeddings
+X_structured_only = structured_scaled  # already standardized earlier
+y = target
+
+X_train_struct, X_test_struct, y_train_struct, y_test_struct = train_test_split(
+    X_structured_only, y, test_size=0.2, random_state=42, stratify=y
+)
+from sklearn.linear_model import LogisticRegression
+
+logreg = LogisticRegression(max_iter=1000)
+logreg.fit(X_train_struct, y_train_struct)
+from sklearn.metrics import accuracy_score, f1_score
+
+y_pred_logreg = logreg.predict(X_test_struct)
+
+acc_logreg = accuracy_score(y_test_struct, y_pred_logreg)
+f1_logreg = f1_score(y_test_struct, y_pred_logreg)
+
+print(f"📉 Logistic Regression Accuracy: {acc_logreg:.4f}")
+print(f"📉 Logistic Regression F1 Score: {f1_logreg:.4f}")
+
+loss, acc_nn = model.evaluate(X_test, y_test)
+
+print("\n🔍 Final Model Comparison:")
+print(f"✅ Neural Net (with notes) Accuracy: {acc_nn:.4f}")
+print(f"📉 Logistic Regression (structured only) Accuracy: {acc_logreg:.4f}")
+
+print(f"✅ Neural Net (with notes) F1 Score: {f1_score(y_test, model.predict(X_test) > 0.5):.4f}")
+print(f"📉 Logistic Regression (structured only) F1 Score: {f1_logreg:.4f}")
+
