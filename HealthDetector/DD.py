@@ -268,3 +268,24 @@ print(f"📉 Logistic Regression (structured only) Accuracy: {acc_logreg:.4f}")
 
 print(f"✅ Neural Net (with notes) F1 Score: {f1_score(y_test, model.predict(X_test) > 0.5):.4f}")
 print(f"📉 Logistic Regression (structured only) F1 Score: {f1_logreg:.4f}")
+
+# Confusion Matrices for models
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
+
+print("Confusion Matrix: Logistic Regression:")
+cm_logreg = confusion_matrix(y_test_struct, y_pred_logreg)
+disp_logreg = ConfusionMatrixDisplay(confusion_matrix=cm_logreg, display_labels=['No Disease', 'Disease'])
+disp_logreg.plot(cmap=plt.cm.Oranges)
+plt.title("Confusion Matrix: Logistic Regression")
+plt.grid(False)
+plt.show()
+y_pred_nn = (model.predict(X_test) > 0.5).astype("int32")
+
+print("Confusion Matrix: Neural Network")
+cm = confusion_matrix(y_test, y_pred_nn)
+disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=['No Disease', 'Disease'])
+disp.plot(cmap=plt.cm.Blues)
+plt.title("Confusion Matrix: Neural Network")
+plt.grid(False)
+plt.show()
+
