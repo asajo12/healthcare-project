@@ -1,5 +1,7 @@
 import pandas as pd
 import numpy as np 
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 """
 DATA LOADING AND PREPROCESSING
@@ -36,7 +38,44 @@ df.reset_index(drop=True, inplace=True)
 print("✅ Cleaned dataset shape:", df.shape)
 print(df.head())
 
+# Data analysis & Visualizations of Features
+# 1. Heart Disease Frequency
+plt.figure(figsize=(6, 4))
+ax = sns.countplot(x='target', data=df, palette='Set2')
+legend_labels = ['No Heart Disease', 'Has Heart Disease']
+handles = [plt.Rectangle((0,0),1,1, color=c) for c in sns.color_palette('Set2')[:2]]
+plt.legend(handles, legend_labels, title="Condition")
+plt.title('Heart Disease Frequency')
+plt.xlabel('Target')
+plt.ylabel('Count')
+plt.tight_layout()
+plt.show()
 
+# 2. Age distribution by target
+plt.figure(figsize=(8, 5))
+sns.histplot(data=df, x='age', hue='target', multiple='stack', palette='Set1', bins=20)
+plt.title('Age Distribution by Heart Disease Status')
+plt.xlabel('Age')
+plt.ylabel('Frequency')
+plt.tight_layout()
+plt.show()
+
+# 3. Cholesterol vs. Age, colored by target
+plt.figure(figsize=(8, 5))
+sns.scatterplot(data=df, x='age', y='chol', hue='target', palette='coolwarm')
+plt.title('Cholesterol vs Age by Heart Disease Status')
+plt.xlabel('Age')
+plt.ylabel('Cholesterol')
+plt.tight_layout()
+plt.show()
+
+# 4. Correlation Heatmap
+plt.figure(figsize=(10, 8))
+corr = df.corr()
+sns.heatmap(corr, annot=True, cmap="coolwarm", fmt=".2f", square=True)
+plt.title("Correlation Heatmap")
+plt.tight_layout()
+plt.show()
 
 
 """
@@ -229,4 +268,24 @@ print(f"📉 Logistic Regression (structured only) Accuracy: {acc_logreg:.4f}")
 
 print(f"✅ Neural Net (with notes) F1 Score: {f1_score(y_test, model.predict(X_test) > 0.5):.4f}")
 print(f"📉 Logistic Regression (structured only) F1 Score: {f1_logreg:.4f}")
+
+# Confusion Matrices for models
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
+
+print("Confusion Matrix: Logistic Regression:")
+cm_logreg = confusion_matrix(y_test_struct, y_pred_logreg)
+disp_logreg = ConfusionMatrixDisplay(confusion_matrix=cm_logreg, display_labels=['No Disease', 'Disease'])
+disp_logreg.plot(cmap=plt.cm.Oranges)
+plt.title("Confusion Matrix: Logistic Regression")
+plt.grid(False)
+plt.show()
+y_pred_nn = (model.predict(X_test) > 0.5).astype("int32")
+
+print("Confusion Matrix: Neural Network")
+cm = confusion_matrix(y_test, y_pred_nn)
+disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=['No Disease', 'Disease'])
+disp.plot(cmap=plt.cm.Blues)
+plt.title("Confusion Matrix: Neural Network")
+plt.grid(False)
+plt.show()
 
